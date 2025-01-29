@@ -1,147 +1,109 @@
 <script setup>
+// Import du fichier JSON
+import colorsList from './assets/data/colorsList'
+
 import { ref } from 'vue'
 
-const colorsList = ref([
-  [
-    'rgb(245, 245, 245)',
-    'rgb(238, 238, 238)',
-    'rgb(189, 189, 189)',
-    'rgb(158, 158, 158)',
-    'rgb(97, 97, 97)',
-    'rgb(66, 66, 66)',
-    'rgb(0, 0, 0)',
-  ],
-  [
-    'rgb(255, 205, 210)',
-    'rgb(239, 154, 154)',
-    'rgb(239, 83, 80)',
-    'rgb(244, 67, 54)',
-    'rgb(211, 47, 47)',
-    'rgb(198, 40, 40)',
-    'rgb(183, 28, 28)',
-  ],
-  [
-    'rgb(225, 190, 231)',
-    'rgb(206, 147, 216)',
-    'rgb(171, 71, 188)',
-    'rgb(156, 39, 176)',
-    'rgb(123, 31, 162)',
-    'rgb(106, 27, 154)',
-    'rgb(74, 20, 140)',
-  ],
-  [
-    'rgb(187, 222, 251)',
-    'rgb(144, 202, 249)',
-    'rgb(66, 165, 245)',
-    'rgb(33, 150, 243)',
-    'rgb(25, 118, 210)',
-    'rgb(21, 101, 192)',
-    'rgb(13, 71, 161)',
-  ],
-  [
-    'rgb(200, 230, 201)',
-    'rgb(197, 225, 165)',
-    'rgb(102, 187, 106)',
-    'rgb(76, 175, 80)',
-    'rgb(56, 142, 60)',
-    'rgb(46, 125, 50)',
-    'rgb(27, 94, 32)',
-  ],
-  [
-    'rgb(255, 236, 179)',
-    'rgb(255, 213, 79)',
-    'rgb(255, 202, 40)',
-    'rgb(255, 193, 7)',
-    'rgb(255, 160, 0)',
-    'rgb(255, 143, 0)',
-    'rgb(255, 111, 0)',
-  ],
-  [
-    'rgb(215, 204, 200)',
-    'rgb(188, 170, 164)',
-    'rgb(141, 110, 99)',
-    'rgb(121, 85, 72)',
-    'rgb(109, 76, 65)',
-    'rgb(78, 52, 46)',
-    'rgb(62, 39, 35)',
-  ],
-])
-
+// Création de la valeur réactive qui stocke la couleur sélectionnée
 const selectedColor = ref('rgb(245, 245, 245)')
+
 const selectColor = (color) => {
   selectedColor.value = color
+}
+
+// Fonction qui copie dans le presse-papier
+const copyToClipboard = async () => {
+  try {
+    // Copier dans le presse-papiers est une action asynchrone, donc on utilise le async/await pour déclencher l'alerte seulement une fois l'action réalisée
+    await navigator.clipboard.writeText(selectedColor.value)
+    alert(`'${selectedColor.value}' has been copied'`)
+  } catch (error) {
+    // On utilise également un try/catch pour afficher l'erreur en cas de problème avec l'action asynchrone
+    alert('Cannot copy', error)
+  }
 }
 </script>
 
 <template>
-  <h1>Sélectionnez une couleur</h1>
   <main>
-    <div>
-      <div class="gradient" v-for="colors in colorsList" :key="colors[0]">
-        <div
-          class="sample"
-          v-for="color in colors"
-          :key="color"
-          :style="{ backgroundColor: color }"
-          @click="selectColor(color)"
-          :class="{
-            selected: color === selectedColor,
-          }"
-        ></div>
-      </div>
-    </div>
-    <div>
-      <p>{{ selectedColor }}</p>
+    <h1>Sélectionnez une couleur</h1>
 
-      <div class="big-color" :style="{ backgroundColor: selectedColor }"></div>
+    <div>
+      <section class="leftCol">
+        <!-- Boucle sur le tableau pour accéder à chaque sous-tableau -->
+        <div v-for="subColorsList in colorsList" :key="subColorsList[0]">
+          <!-- Boucle sur le sous-tableau pour accéder à chaque couleur -->
+          <div
+            v-for="color in subColorsList"
+            :key="color"
+            :style="{ backgroundColor: color }"
+            @click="selectColor(color)"
+            :class="{
+              selected: color === selectedColor,
+            }"
+          ></div>
+          <!-- Cette 'div' a du style dynamique qui affiche en arrière plan la couleur et une classe CSS dynamique qui s'affiche seulement s'il s'agit de la couleur sélectionnée -->
+        </div>
+      </section>
+
+      <section class="rightCol">
+        <!-- Affichage de la valeur de la couleur sélectionnée -->
+        <p @click="copyToClipboard">{{ selectedColor }}</p>
+
+        <!-- Bloc dans lequel est affiché la couleur sélectionnée -->
+        <div @click="copyToClipboard"></div>
+      </section>
     </div>
   </main>
 </template>
 
 <style scoped>
-h1 {
-  font-size: 40px;
-  text-align: center;
-  color: black;
-  margin-bottom: 200px;
-  margin-top: 100px;
-}
-
 main {
-  /* border: 1px green solid; */
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 50px;
+}
+main > div {
+  display: flex;
+  align-items: center;
   justify-content: center;
   gap: 150px;
+  flex: 1;
 }
-
-.gradient {
-  /* border: 1px red solid; */
+/* -- Colonne de gauche -------- */
+.leftCol {
   display: flex;
-  /* gap: 10px; */
+  flex-direction: column;
+  gap: 10px;
 }
-
-.sample {
+.leftCol > div {
   display: flex;
-  margin: 5px;
-  height: 25px;
-  width: 25px;
+  gap: 10px;
+}
+.leftCol > div > div {
+  height: 50px;
+  width: 50px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+/* -- Colonne de droite --------- */
+.rightCol > div {
+  background-color: v-bind(selectedColor);
+  width: 300px;
+  height: 300px;
   border-radius: 5px;
   cursor: pointer;
-  /* border: 1px solid black; */
 }
 p {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
 }
-.big-color {
-  border: 1px solid black;
-  height: 180px;
-  width: 180px;
-  justify-self: center;
-  align-self: center;
-}
-
-.gradient .selected {
-  box-shadow: Opx Opx 10px black;
+/* -- Autre --------- */
+.selected {
+  box-shadow: 0px 0px 10px black;
 }
 </style>
